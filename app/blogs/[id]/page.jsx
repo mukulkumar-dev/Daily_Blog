@@ -1,132 +1,106 @@
-'use client';
+"use client";
 
-import { assets, blog_data } from '@/Assets/assets';
-import Footer from '@/Components/Footer';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, {useState, useEffect} from 'react'
+import { use } from "react";
+import { assets } from "@/Assets/assets";
+import Footer from "@/Components/Footer";
+import Image from "next/image";
+import Link from "next/link";
+import axios from "axios";
+import React, { useState, useEffect } from "react";
 
-const page = ({params}) => {
+const Page = ({ params }) => {
+  const resolvedParams = use(params);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const [data, setData] = useState(null);
+  useEffect(() => {
+    const fetchBlogData = async () => {
+      try {
+        if (!resolvedParams?.id) return;
 
-    const fetchBlogData = () =>{
-        for(let i=0;i<blog_data.length;i++){
-            if(Number(params.id)==blog_data[i].id){
-                setData(blog_data[i]);
-                console.log(blog_data[i]);
-                break;
-            }
-        }
-    }
+        const response = await axios.get("/api/blog", {
+          params: { id: resolvedParams.id },
+        });
 
-    useEffect(()=>{
-        fetchBlogData();
-    })
+        setData(response.data);
+      } catch (err) {
+        setError("Failed to load blog data.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogData();
+  }, [resolvedParams]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return data ? (
     <>
       <div className="bg-gray-200 py-5 px-5 md:px-12 lg:px-28">
         <div className="flex justify-between items-center">
-          <Link href='/'>
+          <Link href="/">
             <Image
               src={assets.logo}
               width={200}
-              alt=""
+              alt="Logo"
               className="w-[130px] sm:w-auto"
             />
           </Link>
           <button className="flex items-center gap-2 font-medium py-1 px-3 sm:py-3 sm:px-6 border border-black shadow-[-7px_7px_0px_#000000]">
-            Get Started <Image src={assets.arrow} alt="" />
+            Get Started <Image src={assets.arrow} alt="Arrow" />
           </button>
         </div>
         <div className="text-center my-24">
           <h1 className="text-2xl sm:text-5xl font-semibold max-w-[700px] mx-auto">
             {data.title}
           </h1>
-          <Image
-            className="mx-auto mt-6 border border-white rounded-full"
-            src={data.author_img}
-            width={60}
-            height={60}
-            alt=""
-          />
+          {data.authorImg && (
+            <Image
+              className="mx-auto mt-6 border border-white rounded-full"
+              src={data.authorImg}
+              width={60}
+              height={60}
+              alt="Author"
+            />
+          )}
           <p className="mt-1 pb-2 text-lg max-w-[740px] mx-auto">
             {data.author}
           </p>
         </div>
       </div>
       <div className="mx-5 max-w-[800px] md:mx-auto mt-[-100px] mb-10">
-        <Image
-          className="border-4 border-white"
-          src={data.image}
-          width={1280}
-          height={720}
-          alt=""
-        />
-        <h1 className="my-8 text-[26px] font-semibold">Introduction :</h1>
-        <p>{data.description}</p>
-        <h3 className="my-5 text-[18px] font-semibold">
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quis
-          consequuntur cumque ratione in, sequi labore sapiente animi place
-        </h3>
-        <p className="my-3">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus
-          at mollitia qui id deleniti sequi ex animi! Optio autem modi magni
-          perspiciatis, at doloribus excepturi omnis vel voluptatibus quos
-          laborum?Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-          Dolor quasi soluta fugit accusamus repudiandae ut ducimus harum
-          veritatis, magni saepe unde non voluptate, dolores deleniti explicabo
-          obcaecati sit maxime praesentium.
-        </p>
-        <p className="my-3">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus
-          at mollitia qui id deleniti sequi ex animi! Optio autem modi magni
-          perspiciatis, at doloribus excepturi omnis vel voluptatibus quos
-          laborum?Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-          Dolor quasi soluta fugit accusamus repudiandae ut ducimus harum
-          veritatis, magni saepe unde non voluptate, dolores deleniti explicabo
-          obcaecati sit maxime praesentium.
-        </p>
-
-        <h3 className="my-5 text-[18px] font-semibold">
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quis
-          consequuntur cumque ratione in, sequi labore sapiente animi place
-        </h3>
-        <p className="my-3">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus
-          at mollitia qui id deleniti sequi ex animi! Optio autem modi magni
-          perspiciatis, at doloribus excepturi omnis vel voluptatibus quos
-          laborum?Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-          Dolor quasi soluta fugit accusamus repudiandae ut ducimus harum
-          veritatis, magni saepe unde non voluptate, dolores deleniti explicabo
-          obcaecati sit maxime praesentium.
-        </p>
-        <p className="my-3">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus
-          at mollitia qui id deleniti sequi ex animi! Optio autem modi magni
-          perspiciatis, at doloribus excepturi omnis vel voluptatibus quos
-          laborum?Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-          Dolor quasi soluta fugit accusamus repudiandae ut ducimus harum
-          veritatis, magni saepe unde non voluptate, dolores deleniti explicabo
-          obcaecati sit maxime praesentium.
-        </p>
+        {data.image && (
+          <Image
+            className="border-4 border-white"
+            src={`/${data.image}`}
+            width={1280}
+            height={720}
+            alt="Blog Cover"
+          />
+        )}
+        <h1 className="my-8 text-[26px] font-semibold">Introduction:</h1>
+        {/* Render HTML properly */}
+        <div dangerouslySetInnerHTML={{ __html: data.description }} />
         <div className="my-24">
-          <p className="text-black font font-semibold my-4">
-            Share this article on social media{" "}
+          <p className="text-black font-semibold my-4">
+            Share this article on social media
           </p>
           <div className="flex">
-            <Image src={assets.facebook_icon} width={60} alt="" />
-            <Image src={assets.twitter_icon} width={60} alt="" />
-            <Image src={assets.googleplus_icon} width={60} alt="" />
+            <Image src={assets.facebook_icon} width={60} alt="Facebook" />
+            <Image src={assets.twitter_icon} width={60} alt="Twitter" />
+            <Image src={assets.googleplus_icon} width={60} alt="Google+" />
           </div>
         </div>
       </div>
       <Footer />
     </>
   ) : (
-    <></>
+    <p>No blog found.</p>
   );
-}
+};
 
-export default page
+export default Page;

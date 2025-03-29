@@ -1,14 +1,32 @@
-import { blog_data } from '@/Assets/assets'
-import React, { useState } from 'react'
-import BlogItem from './BlogItem'
+import { blog_data } from "@/Assets/assets";
+import React, { useState, useEffect } from "react";
+import BlogItem from "./BlogItem";
+import axios from "axios";
+import { motion } from "framer-motion";
 
 const BlogList = () => {
+  const [menu, setMenu] = useState("All");
+  const [blogs, setBlogs] = useState([]);
 
-    const [menu, setMenu] = useState("All");
+  const fetchBlogs = async () => {
+    const response = await axios.get("/api/blog");
+    setBlogs(response.data.blogs);
+    console.log(response.data.blogs);
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
 
   return (
     <div>
-      <div className="flex justify-center gap-6 my-10">
+      {/* Header Section with Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="flex justify-center gap-6 my-10 mt-20 text-xl mb-20"
+      >
         <button
           onClick={() => setMenu("All")}
           className={
@@ -49,25 +67,41 @@ const BlogList = () => {
         >
           Lifestyle
         </button>
-      </div>
-      <div className="flex flex-wrap justify-around gap-1 gap-y-10 mb-16 xl:mx-24">
-        {blog_data
+      </motion.div>
+
+      {/* Blog List Section with Animation */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }} // Adding delay for staggered effect
+        className="flex flex-wrap justify-around gap-1 gap-y-10 mb-16 xl:mx-24"
+      >
+        {blogs
           .filter((item) => (menu == "All" ? true : item.category === menu))
           .map((item, index) => {
             return (
-              <BlogItem
+              <motion.div
                 key={index}
-                id={item.id}
-                image={item.image}
-                title={item.title}
-                category={item.category}
-                description={item.description}
-              />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.4 + index * 0.1, // Adding delay to create stagger effect for each blog item
+                }}
+              >
+                <BlogItem
+                  id={item._id}
+                  image={item.image}
+                  title={item.title}
+                  category={item.category}
+                  description={item.description}
+                />
+              </motion.div>
             );
           })}
-      </div>
+      </motion.div>
     </div>
   );
-}
+};
 
-export default BlogList
+export default BlogList;
